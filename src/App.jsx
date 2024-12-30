@@ -1,11 +1,5 @@
 import './App.css'
 
-const title = 'React';
-const welcome = {
-    greeting: 'Hey',
-    title: 'React',
-};
-
 function getTitle(title) {
     return title;
 }
