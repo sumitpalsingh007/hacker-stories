@@ -15,14 +15,6 @@ const useStorageState = (key, initialState) => {
     return [value, setValue];
 };
 
-const getAsyncStories = () =>
-    new Promise((resolve) =>
-        setTimeout(
-            () => resolve({ data: { stories: initialStories } }),
-            2000
-        )
-    );
-
 const storiesReducer = (state, action) => {
     switch (action.type) {
         case 'STORIES_FETCH_INIT':
@@ -63,6 +55,10 @@ const App = () => {
         'React'
     );
 
+    const [url, setUrl] = React.useState(
+        `${API_ENDPOINT}${searchTerm}`
+    );
+
     const [stories, dispatchStories] = React.useReducer(
         storiesReducer,
         { data: [], isLoading: false, isError: false }
@@ -73,7 +69,7 @@ const App = () => {
 
         dispatchStories({ type: 'STORIES_FETCH_INIT' });
 
-        fetch(`${API_ENDPOINT}${searchTerm}`)
+        fetch(url)
             .then((response) => response.json())
             .then((result) => {
             dispatchStories({
@@ -84,7 +80,7 @@ const App = () => {
         .catch(() =>
             dispatchStories({ type: 'STORIES_FETCH_FAILURE' })
         );
-    }, [searchTerm]);
+    }, [url]);
 
     React.useEffect(() => {
         handleFetchStories();
@@ -97,13 +93,13 @@ const App = () => {
         });
     };
 
-    const handleSearch = (event) => {
+    const handleSearchInput = (event) => {
         setSearchTerm(event.target.value);
     };
 
-    const searchedStories = stories.data.filter((story) =>
-        story.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleSearchSubmit = () => {
+        setUrl(`${API_ENDPOINT}${searchTerm}`);
+    };
 
     return (
         <div>
@@ -112,12 +108,18 @@ const App = () => {
                 id="search"
                 value={searchTerm}
                 isFocused
-                onInputChange={handleSearch}>
+                onInputChange={handleSearchInput}>
                     <strong>Search:</strong>
             </InputWithLabel>
             <hr />
+            <button
+                type="button"
+                disabled={!searchTerm}
+                onClick={handleSearchSubmit}>
+                <strong>Submit</strong>
+            </button>
 
-            {stories.isError && <p>Something went wrong ...</p>}
+    {stories.isError && <p>Something went wrong ...</p>}
 
             {stories.isLoading ? (<p>Loading ...</p>) :
                 (<List
